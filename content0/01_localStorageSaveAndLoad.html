@@ -1,0 +1,104 @@
+<html>
+	<head>
+		<meta charset="utf-8">
+	</head>
+	<body>
+		<div>
+			<h1>LocalStorageへデータをセーブ&ロード</h1>
+			<input type="button" value="Save" onClick="onButtonClick_saveData()">
+			<input type="button" value="Load" onClick="onButtonClick_loadData()">
+			<hr>
+			<label id="label_score_txt">score: </label>
+			<input type="button" value="+" style="font-size:1.5em; width:1.25em; height:1.25em" onClick="onButtonClick_addScore()">
+			<label id="label_score" style="font-size:2.5em">0</label>
+			<hr>
+			<label id="label_status">[+]Scoreを加算する [Save]Scoreを保存 [Load]Scoreを読み込み</label>
+			<h2>備忘録</h2>
+			<div>
+				<p>やりたいことが浮かばなかったのでとりあえず何かの取っ掛かりになるかと思った。</p>
+				<p>これが出来ればゲーム作るなり、サイト上のユーザカスタマイズなり、何らかのとっかかりになるはず。</p>
+				<h3>使った関数</h3>
+				<table style="margin:0 0 0 1em">
+					<tbody>
+						<tr>
+							<td>JSON.stringify(object)</td>
+							<td> : オブジェクトをjson文字列に変換</td>
+						</tr>
+						<tr>
+							<td>JSON.parse(json)</td>
+							<td> : json文字列をオブジェクトに変換</td>
+						</tr>
+						<tr>
+							<td>localStolage.setItem(key, object)</td>
+							<td> : データをストレージに格納</td>
+						</tr>
+						<tr>
+							<td>localStolage.getItem(key) => object</td>
+							<td> : ストレージからデータを取得</td>
+						</tr>
+						<tr>
+							<td>escape(string)</td>
+							<td> : 特殊文字の置き換え。必要ないかも</td>
+						</tr>
+						<tr>
+							<td>unescape(string)</td>
+							<td> : エスケープした文字の複合化</td>
+						</tr>
+					</tbody>
+				</table>
+				<h3>もっとやりたかったこと</h3>
+				<div style="margin: 0 0 0 1em">
+					<p>データをbase64化したかったが、object->byte配列が面倒そうだったので見送り。</p>
+					<p>他のところで流用できるようにjsファイルに分けてモジュール化もしたい。</p>
+				</div>
+			</div>
+		</div>
+	</body>
+
+	<script>
+		var globalData = { version: "1.0.0", score: 0 }
+
+		function loadData(){
+			var json = localStorage.getItem("saveData")
+			if (json == null) return
+			globalData = JSON.parse(unescape(json))
+		}
+
+		function saveData(){
+			var json = escape(JSON.stringify(globalData))
+			localStorage.setItem("saveData", json)
+		}
+
+		function labelUpdate_raisedScore(){
+			document.getElementById("label_score").innerText = globalData.score
+		}
+
+		function getTimestamp(){
+			now = new Date()
+			return now.getHours() + ":" + 
+				   now.getMinutes() + ":" + 
+				   now.getSeconds()
+		}
+
+		function labelUpdate_setAndRaisedStatus(str, withTimeStamp = true){
+			time = withTimeStamp ? "[" + getTimestamp() + "] " : ""
+			document.getElementById("label_status").innerText = time + str
+		}
+
+		function onButtonClick_addScore(){
+			globalData.score += 1
+			labelUpdate_raisedScore()
+		}
+
+		function onButtonClick_loadData(){
+			loadData()
+			labelUpdate_raisedScore()
+			labelUpdate_setAndRaisedStatus("data loaded.")
+		}
+
+		function onButtonClick_saveData(){
+			saveData()
+			labelUpdate_setAndRaisedStatus("data saved.")
+		}
+	</script>
+</html>
