@@ -1,0 +1,97 @@
+<html>
+	<head>
+		<meta charset="utf-8">
+	</head>
+	<body>
+		<div>
+			<h1>JsonデータからHTMLテーブルを生成する</h1>
+			<h2>メモ</h2>
+			<div>
+				<p>Jsonデータを読みだして、テーブルを表示します。</p>
+				<p>特定のJSONデータ形式を対象にしているので互換性はありません。</p>
+				<p>ファイルを読みだすとき、ローカル環境ではXmlHttpRequest()やFetch()が使えないようです。</p>
+				<p>ローカル確認ではとりあえずファイルダイアログを介して読みだす。</p>
+				<p>読み先Jsonデータ: <a href="./../json/mtg_strixhaven_mysticalArchive.json">mtg_strixhaven_mysticalArchive.json</a></p>
+			</div>
+			<input id="loadJsonFileInput" type="file" onchange="loadLocalJsonTheCardList()">
+			<table id="json-table00" style="background-color:white; border: 1px solid; "></table>
+		</div>
+	</body>
+	<script>
+		window.onload = function(){
+			//! @note error when local.
+			loadJsonTheCardList("./../json/mtg_strixhaven_mysticalArchive.json", createTableOnCardList)
+		}
+
+		function loadLocalJsonTheCardList(){
+			var file = document.getElementById("loadJsonFileInput").files[0]
+			if(file == undefined) return
+			if(file.type != "application/json") return
+
+			var reader = new FileReader()
+			reader.onload = function(){
+				json = JSON.parse(reader.result)
+				console.log(json)
+				createTableOnCardList(json)
+			}
+			
+			reader.readAsText(file)
+		}
+
+		function loadJsonTheCardList(path, loadedFunction){
+			var xml = new XMLHttpRequest()
+			xml.open("get", path)
+			xml.send()
+			xml.onreadystatechange = function(){
+				if (xml.readyState != 4) return
+				if (xml.status != 200) return
+				json = JSON.parse(this.responseText)
+				loadedFunction(json)
+			}
+		}
+
+		function valdateCardListJson(json){
+			if(("cardlist" in json) != true) return false
+			return true
+		}
+
+		function createTableOnCardList(json){
+			if (valdateCardListJson(json) == false){
+				alert("this json-format is not supportted!")
+				return
+			}
+
+			var table = document.getElementById("json-table00")
+			var thead = document.createElement("thead")
+			var tbody = document.createElement("tbody")
+
+			//! create column-base
+			var tr_base = document.createElement("tr")
+			var keys = Object.keys(json.cardlist[0])
+			console.log(keys)
+			for(let i in keys){
+				var td = document.createElement("td")
+				td.innerText = keys[i]
+				td.style.border = "1px solid"
+				tr_base.appendChild(td)
+			}
+
+			//! add header
+			thead.appendChild(tr_base.cloneNode(true))
+
+			//! create column
+			for(let i in json.cardlist){
+				var tr = tr_base.cloneNode(true)
+				for(let child_idx in tr.children){
+					var child = tr.children[child_idx]
+					var key = child.innerText
+					child.innerText = json.cardlist[i][key]
+				}
+				tbody.appendChild(tr)
+			}
+
+			table.appendChild(thead)
+			table.appendChild(tbody)
+		}
+	</script>
+</html>
